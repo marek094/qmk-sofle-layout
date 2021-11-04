@@ -132,27 +132,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_ADJUST] = LAYOUT( \
   XXXXXXX , XXXXXXX,  XXXXXXX ,  XXXXXXX , XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
   RESET  , XXXXXXX,KC_QWERTY,KC_COLEMAK,CG_TOGG,XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX , XXXXXXX,CG_TOGG, XXXXXXX,    XXXXXXX,  XXXXXXX,                     XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, XXXXXXX, \
+  XXXXXXX , XXXXXXX,CG_TOGG, SH_ON,    SH_OFF,  XXXXXXX,                     XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, XXXXXXX, \
   XXXXXXX , XXXXXXX, XXXXXXX, XXXXXXX,    XXXXXXX,  XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, XXXXXXX, \
                    _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______ \
   )
 };
 
+// #define OLED_ENABLE
 #ifdef OLED_ENABLE
 
-static void render_logo(void) {
-    static const char PROGMEM qmk_logo[] = {
-        0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
-        0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
-        0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0
-    };
+// static void render_logo(void) {
+//     static const char PROGMEM qmk_logo[] = {
+//         0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
+//         0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
+//         0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0
+//     };
 
-    oled_write_P(qmk_logo, false);
-}
+//     oled_write_P(qmk_logo, false);
+// }
 
 static void print_status_narrow(void) {
     // Print current mode
-    oled_write_P(PSTR("\n\n"), false);
+    oled_write_P(PSTR("\n"), false);
     oled_write_ln_P(PSTR("MODE"), false);
     oled_write_ln_P(PSTR(""), false);
     if (keymap_config.swap_lctl_lgui) {
@@ -191,29 +192,54 @@ static void print_status_narrow(void) {
         default:
             oled_write_ln_P(PSTR("Undef"), false);
     }
-    oled_write_P(PSTR("\n\n"), false);
+    oled_write_P(PSTR("\n\n\n"), false);
     led_t led_usb_state = host_keyboard_led_state();
-    oled_write_ln_P(PSTR("CPSLK"), led_usb_state.caps_lock);
+    oled_write_P(PSTR("     "), led_usb_state.caps_lock);
+    oled_write_P(PSTR("CPSLK"), led_usb_state.caps_lock);
+    oled_write_ln_P(PSTR("     "), led_usb_state.caps_lock);
 }
 
+static uint16_t cnt = 0;
+
+static void print_information(void) {
+    oled_write_P(PSTR("\n\n"), false);
+    oled_write_ln_P(PSTR("HELLO"), false);
+    oled_write_ln_P(PSTR("MAREK\n"), false);
+    // oled_write_ln_P(PSTR("keys"), false);
+    // uint16_t x = cnt;
+    // do {
+    //     char c = '0' + (x%10);
+    //     x /= 10;
+    //     // oled_write_P(s, false);
+    //     oled_write_char(c, true);
+    // } while (x > 0);
+
+    // oled_write_ln_P(PSTR(""), false);
+}
+
+
+
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    if (is_keyboard_master()) {
-        return OLED_ROTATION_270;
-    }
-    return rotation;
+    // if (is_keyboard_master()) {
+    return OLED_ROTATION_270;
+    // }
+    // return rotation;
 }
 
 void oled_task_user(void) {
     if (is_keyboard_master()) {
         print_status_narrow();
     } else {
-        render_logo();
+        // render_logo();
+        print_information();
+        // print_status_n-arrow();
     }
 }
 
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    cnt += 1;
     switch (keycode) {
         case KC_QWERTY:
             if (record->event.pressed) {
@@ -396,14 +422,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENCODER_ENABLE
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 0) {
-        if (clockwise) {
+    if (index == 1) {
+        if (!clockwise) {
             tap_code(KC_VOLU);
         } else {
             tap_code(KC_VOLD);
         }
-    } else if (index == 1) {
-        if (clockwise) {
+    } else if (index == 0) {
+        if (!clockwise) {
             tap_code(KC_PGDOWN);
         } else {
             tap_code(KC_PGUP);
