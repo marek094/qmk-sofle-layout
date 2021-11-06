@@ -109,17 +109,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
 [_RAISE] = LAYOUT( \
-  _______, _______ , _______ , _______ , _______, KC_PSCR,                          _______,  _______  , _______,  _______ ,  _______ ,_______, \
-  _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                        KC_PGUP, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
+  _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______,  _______  , _______,  _______ ,  _______ ,_______, \
+  _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                       KC_PGUP, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
   _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN,  KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_PIPE, \
-  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,        _______,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_BSLS, _______, \
+  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_BSLS, _______, \
                          _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______ \
 ),
 /* ADJUST
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | RESET|      |QWERTY|COLEMAK|      |      |                    |      |      |      |      |      |      |
+ * | RESET|      |QWERTY|COLEMAK|     |      |                    |      |      |      |      |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |      |MACWIN|      |      |      |-------.    ,-------|      | VOLDO| MUTE | VOLUP|      |      |
  * |------+------+------+------+------+------|  MUTE |    |       |------+------+------+------+------+------|
@@ -130,13 +130,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
   [_ADJUST] = LAYOUT( \
-  XXXXXXX , XXXXXXX,  XXXXXXX ,  XXXXXXX , XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  RESET  , XXXXXXX,KC_QWERTY,KC_COLEMAK,CG_TOGG,XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX , XXXXXXX,CG_TOGG, XXXXXXX, XXXXXXX,  XXXXXXX,                     XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, XXXXXXX, \
-  XXXXXXX , XXXXXXX, XXXXXXX, XXXXXXX,    XXXXXXX,  XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, XXXXXXX, \
-                   _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______ \
+  XXXXXXX, KC_QWERTY, KC_COLEMAK, CG_TOGG, XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL2, XXXXXXX, XXXXXXX,                        XXXXXXX, XXXXXXX, KC_MS_U, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL1, KC_BTN1, XXXXXXX,                       XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL0, KC_BTN2, XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, XXXXXXX, \
+                   _______, _______, _______, _______, _______,                     _______, _______, _______, _______, _______ \
   )
 };
+
+
+bool            shift_held = false;
+static uint16_t held_shift = 0;
+
 
 
 /* KEYBOARD PET START */
@@ -267,12 +272,12 @@ static void render_luna(int LUNA_X, int LUNA_Y) {
     }
 
     /* this fixes the screen on and off bug */
-    // if (current_wpm > 0) {
-    //     oled_on();
-    //     anim_sleep = timer_read32();
-    // } else if (timer_elapsed32(anim_sleep) > OLED_TIMEOUT) {
-    //     oled_off();
-    // }
+    if (current_wpm > 0) {
+        oled_on();
+        anim_sleep = timer_read32();
+    } else if (timer_elapsed32(anim_sleep) > OLED_TIMEOUT) {
+        oled_off();
+    }
 }
 
 /* KEYBOARD PET END */
@@ -471,7 +476,6 @@ void oled_task_user(void) {
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // cnt += 1;
     switch (keycode) {
         case KC_QWERTY:
             if (record->event.pressed) {
@@ -670,6 +674,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             /* KEYBOARD PET STATUS END */
 
+        case KC_RSFT:
+        case KC_LSFT:
+            shift_held = record->event.pressed;
+            held_shift = keycode;
+            break;
+
+        case KC_MUTE:
+            if (record->event.pressed) {
+                register_code(shift_held ? KC_MPLY : KC_MUTE);
+            } else {
+                unregister_code(shift_held ? KC_MPLY : KC_MUTE);
+            }
+            break;
+
     }
     return true;
 }
@@ -679,9 +697,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 1) {
         if (!clockwise) {
-            tap_code(KC_VOLU);
+            tap_code(shift_held ? KC_MNXT : KC_VOLU);
         } else {
-            tap_code(KC_VOLD);
+            tap_code(shift_held ? KC_MPRV : KC_VOLD);
         }
     } else if (index == 0) {
         if (!clockwise) {
