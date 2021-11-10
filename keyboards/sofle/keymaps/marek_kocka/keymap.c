@@ -22,7 +22,12 @@ enum custom_keycodes {
     KC_DLINE,
 
     KC_LIND,
-    KC_RIND
+    KC_RIND,
+
+    KC_WSUP,
+    KC_WSDN,
+    KC_WWUP,
+    KC_WWDN
 };
 
 
@@ -109,9 +114,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
 [_RAISE] = LAYOUT( \
-  _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______,  _______  , _______,  _______ ,  _______ ,_______, \
+  _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______, KC_WWUP, KC_WSUP, KC_WSDN, KC_WWDN,_______, \
   _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                       KC_PGUP, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
-  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN,  KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_PIPE, \
+  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_PIPE, \
   _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_BSLS, _______, \
                          _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______ \
 ),
@@ -271,13 +276,6 @@ static void render_luna(int LUNA_X, int LUNA_Y) {
         animate_luna();
     }
 
-    /* this fixes the screen on and off bug */
-    if (current_wpm > 0) {
-        oled_on();
-        anim_sleep = timer_read32();
-    } else if (timer_elapsed32(anim_sleep) > OLED_TIMEOUT) {
-        oled_off();
-    }
 }
 
 /* KEYBOARD PET END */
@@ -451,7 +449,9 @@ static void print_status_narrow(void) {
 
     /* KEYBOARD PET RENDER START */
 
-    render_luna(0, 13);
+    if (is_oled_on()) {
+        render_luna(0, 13);
+    }
 
     /* KEYBOARD PET RENDER END */
 }
@@ -614,6 +614,55 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_RBRC);
             }
             return false;
+
+
+        // WORKSPACES
+        case KC_WSUP:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LGUI));
+                register_code(KC_PGUP);
+            } else {
+                unregister_mods(mod_config(MOD_LGUI));
+                unregister_code(KC_PGUP);
+            }
+            return false;
+
+        case KC_WSDN:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LGUI));
+                register_code(KC_PGDN);
+            } else {
+                unregister_mods(mod_config(MOD_LGUI));
+                unregister_code(KC_PGDN);
+            }
+            return false;
+
+
+        case KC_WWUP:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LGUI));
+                register_mods(mod_config(MOD_LSFT));
+                register_code(KC_PGUP);
+            } else {
+                unregister_mods(mod_config(MOD_LGUI));
+                unregister_mods(mod_config(MOD_LSFT));
+                unregister_code(KC_PGUP);
+            }
+            return false;
+
+        case KC_WWDN:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LGUI));
+                register_mods(mod_config(MOD_LSFT));
+                register_code(KC_PGDN);
+            } else {
+                unregister_mods(mod_config(MOD_LGUI));
+                unregister_mods(mod_config(MOD_LSFT));
+                unregister_code(KC_PGDN);
+            }
+            return false;
+
+
         // case KC_COPY:
         //     if (record->event.pressed) {
         //         register_mods(mod_config(MOD_LCTL));
@@ -695,14 +744,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef ENCODER_ENABLE
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 1) {
-        if (!clockwise) {
+    if (index == 0) {
+        if (clockwise) {
             tap_code(shift_held ? KC_MNXT : KC_VOLU);
         } else {
             tap_code(shift_held ? KC_MPRV : KC_VOLD);
         }
-    } else if (index == 0) {
-        if (!clockwise) {
+    } else if (index == 1) {
+        if (clockwise) {
             tap_code(KC_PGDOWN);
         } else {
             tap_code(KC_PGUP);

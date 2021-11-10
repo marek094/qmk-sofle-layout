@@ -20,3 +20,6 @@ for more options.
 #define MK_C_INTERVAL_1        16
 #define MK_C_OFFSET_2      40
 #define MK_C_INTERVAL_2        16
+
+// #define SPLIT_USB_DETECT
+#define MASTER_RIGHT
