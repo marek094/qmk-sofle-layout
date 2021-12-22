@@ -116,8 +116,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_RAISE] = LAYOUT( \
   _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______, KC_WWUP, KC_WSUP, KC_WSDN, KC_WWDN,_______, \
   _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                       KC_PGUP, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
-  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_PIPE, \
-  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_BSLS, _______, \
+  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_BSLS, \
+  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_PIPE, _______, \
                          _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______ \
 ),
 /* ADJUST
@@ -745,16 +745,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        if (clockwise) {
-            tap_code(shift_held ? KC_MNXT : KC_VOLU);
+        if (get_highest_layer(layer_state) == _QWERTY) {
+            tap_code(clockwise ? KC_VOLU : KC_VOLD);
         } else {
-            tap_code(shift_held ? KC_MPRV : KC_VOLD);
+            tap_code(clockwise ? KC_MNXT : KC_MPRV);
         }
     } else if (index == 1) {
-        if (clockwise) {
-            tap_code(KC_PGDOWN);
+        if (get_highest_layer(layer_state) == _QWERTY) {
+            tap_code(clockwise ? KC_PGDOWN : KC_PGUP);
         } else {
-            tap_code(KC_PGUP);
+            tap_code(clockwise ? KC_BRIU : KC_BRID);
         }
     }
     return true;
