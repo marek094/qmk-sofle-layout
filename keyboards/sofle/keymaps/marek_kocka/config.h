@@ -23,3 +23,6 @@ for more options.
 
 // #define SPLIT_USB_DETECT
 #define MASTER_RIGHT
+
+#define SPLIT_WPM_ENABLE
+#define SPLIT_OLED_ENABLE

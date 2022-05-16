@@ -7,6 +7,7 @@ enum sofle_layers {
     _LOWER,
     _RAISE,
     _ADJUST,
+    _CREEZY
 };
 
 enum custom_keycodes {
@@ -27,7 +28,15 @@ enum custom_keycodes {
     KC_WSUP,
     KC_WSDN,
     KC_WWUP,
-    KC_WWDN
+    KC_WWDN,
+
+    KC_WINLIN,
+
+    KC_PGUPX,
+    KC_PGDNX,
+
+    CR_HLLO,
+    CR_EXIT,
 };
 
 
@@ -114,10 +123,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
 [_RAISE] = LAYOUT( \
-  _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______, KC_WWUP, KC_WSUP, KC_WSDN, KC_WWDN,_______, \
-  _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                       KC_PGUP, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
-  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_BSLS, \
-  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND, KC_LSTRT, KC_RIND, KC_LEND,   KC_PIPE, _______, \
+  _______, _______ , _______ , _______ , _______, KC_PSCR,                       _______,        KC_WWUP, KC_WSUP, KC_WSDN, KC_WWDN,_______, \
+  _______,  KC_INS,  _______,   KC_APP,  XXXXXXX, XXXXXXX,                       KC_PGDNX, KC_PRVWD,   KC_UP, KC_NXTWD,KC_DLINE, KC_BSPC, \
+  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGUPX, KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_BSLS, \
+  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  KC_MPLY,         RESET,  KC_LIND,        KC_LSTRT, KC_RIND, KC_LEND,   KC_PIPE, _______, \
                          _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______ \
 ),
 /* ADJUST
@@ -135,23 +144,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
   [_ADJUST] = LAYOUT( \
-  XXXXXXX, KC_QWERTY, KC_COLEMAK, CG_TOGG, XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL2, XXXXXXX, XXXXXXX,                        XXXXXXX, XXXXXXX, KC_MS_U, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL1, KC_BTN1, XXXXXXX,                       XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX, XXXXXXX, \
+  XXXXXXX, KC_QWERTY, KC_WINLIN, CG_TOGG, XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, KC_WH_U, KC_ACL2, XXXXXXX, XXXXXXX,                        XXXXXXX, XXXXXXX, KC_MS_U, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, KC_WH_D, KC_ACL1, KC_BTN1, XXXXXXX,                       XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX, XXXXXXX, \
   XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL0, KC_BTN2, XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, XXXXXXX, \
                    _______, _______, _______, _______, _______,                     _______, _______, _______, _______, _______ \
-  )
+  ),
+
+  [_CREEZY] = LAYOUT( \
+  CR_EXIT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, CR_HLLO, XXXXXXX,                       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
+                   _______, _______, _______, _______, _______,                     _______, _______, _______, _______, _______ \
+  ),
 };
 
 
-bool            shift_held = false;
-static uint16_t held_shift = 0;
+static bool shift_held = false;
+static bool ctrl_held = false;
+static bool gui_held = false;
+static bool alt_held = false;
 
 
+// uint16_t held_shift = 0;
+// bool keymap_config.swap_win_lin = false;
 
 /* status variables */
 int   current_wpm = 0;
-led_t led_usb_state;
 
 
 
@@ -179,6 +199,7 @@ static void print_logo_narrow(void) {
         oled_write(" wpm", false);
     }
 
+    update();
 }
 
 static void print_status_narrow(void) {
@@ -186,6 +207,8 @@ static void print_status_narrow(void) {
     oled_set_cursor(0, 0);
     if (keymap_config.swap_lctl_lgui) {
         oled_write("MAC", false);
+    } else if (keymap_config.swap_win_lin) {
+        oled_write("WIN", false);
     } else {
         oled_write("LNX", false);
     }
@@ -223,19 +246,52 @@ static void print_status_narrow(void) {
         case _ADJUST:
             oled_write("Adj  ", false);
             break;
+        case _CREEZY:
+            oled_write("Crezy", true);
         default:
             oled_write("Undef", false);
     }
 
-    /* caps lock */
-    oled_set_cursor(0, 8);
-    oled_write("     CPSLK     ", led_usb_state.caps_lock);
+    /* Shift held */
+    oled_set_cursor(0, 6);
+    if (!shift_held) {
+        oled_write("     ", false);
+    } else {
+        oled_write("Shift", true);
+    }
 
+    oled_set_cursor(0, 7);
+    if (!ctrl_held) {
+        oled_write("     ", false);
+    } else {
+        oled_write("Ctrl ", true);
+    }
+
+    oled_set_cursor(0, 8);
+    if (!gui_held) {
+        oled_write("     ", false);
+    } else {
+        oled_write("Gui  ", true);
+    }
+
+
+    oled_set_cursor(0, 9);
+    if (!alt_held) {
+        oled_write("     ", false);
+    } else {
+        oled_write("Alt  ", true);
+    }
+
+
+    /* caps lock */
+    oled_set_cursor(0, 12);
+    led_t led_usb_state = host_keyboard_led_state();
+    oled_write("     CPSLK     ", led_usb_state.caps_lock);
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_270; }
 
-void oled_task_user(void) {
+bool oled_task_user(void) {
     /* KEYBOARD PET VARIABLES START */
 
     // current_wpm   = get_current_wpm();
@@ -248,11 +304,37 @@ void oled_task_user(void) {
     } else {
         print_logo_narrow();
     }
+
+    return false;
 }
 
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    bool do_return = false;
+    switch (keycode) {
+        case CR_HLLO:
+            if (record->event.pressed) {
+                SEND_STRING("HELLO WORLD!");
+                do_return = true;
+            }
+            break;
+        case CR_EXIT:
+            if (record->event.pressed) {
+                SEND_STRING("; exit\n");
+                do_return = true;
+            }
+            break;
+    }
+
+    if (record->event.pressed) {
+        clear_oneshot_layer_state(ONESHOT_PRESSED);
+    }
+
+    if (do_return) {
+        return false;
+    }
+
     switch (keycode) {
         case KC_QWERTY:
             if (record->event.pressed) {
@@ -265,12 +347,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         case KC_LOWER:
-            if (record->event.pressed) {
-                layer_on(_LOWER);
-                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+            if (shift_held) {
+                if (record->event.pressed) {
+                    // layer_on()
+                    set_oneshot_layer(_CREEZY, ONESHOT_START);
+                }
             } else {
-                layer_off(_LOWER);
-                update_tri_layer(_LOWER, _RAISE, _ADJUST);
+                if (record->event.pressed) {
+                    layer_on(_LOWER);
+                    update_tri_layer(_LOWER, _RAISE, _ADJUST);
+                } else {
+                    layer_off(_LOWER);
+                    update_tri_layer(_LOWER, _RAISE, _ADJUST);
+                }
             }
             return false;
         case KC_RAISE:
@@ -289,6 +378,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_off(_ADJUST);
             }
             return false;
+
         case KC_PRVWD:
             if (record->event.pressed) {
                 if (keymap_config.swap_lctl_lgui) {
@@ -396,21 +486,45 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // WORKSPACES
         case KC_WSUP:
             if (record->event.pressed) {
-                register_mods(mod_config(MOD_LGUI));
-                register_code(KC_PGUP);
+                if (keymap_config.swap_win_lin) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_mods(mod_config(MOD_LGUI));
+                    register_code(KC_LEFT);
+                } else {
+                    register_mods(mod_config(MOD_LGUI));
+                    register_code(KC_PGUP);
+                }
             } else {
-                unregister_mods(mod_config(MOD_LGUI));
-                unregister_code(KC_PGUP);
+                if (keymap_config.swap_win_lin) {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_mods(mod_config(MOD_LGUI));
+                    unregister_code(KC_LEFT);
+                } else {
+                    unregister_mods(mod_config(MOD_LGUI));
+                    unregister_code(KC_PGUP);
+                }
             }
             return false;
 
         case KC_WSDN:
             if (record->event.pressed) {
-                register_mods(mod_config(MOD_LGUI));
-                register_code(KC_PGDN);
+                if (keymap_config.swap_win_lin) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_mods(mod_config(MOD_LGUI));
+                    register_code(KC_RGHT);
+                } else {
+                    register_mods(mod_config(MOD_LGUI));
+                    register_code(KC_PGDN);
+                }
             } else {
-                unregister_mods(mod_config(MOD_LGUI));
-                unregister_code(KC_PGDN);
+                if (keymap_config.swap_win_lin) {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_mods(mod_config(MOD_LGUI));
+                    unregister_code(KC_RGHT);
+                } else {
+                    unregister_mods(mod_config(MOD_LGUI));
+                    unregister_code(KC_PGDN);
+                }
             }
             return false;
 
@@ -439,42 +553,70 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-
-        // case KC_COPY:
-        //     if (record->event.pressed) {
-        //         register_mods(mod_config(MOD_LCTL));
-        //         register_code(KC_C);
-        //     } else {
-        //         unregister_mods(mod_config(MOD_LCTL));
-        //         unregister_code(KC_C);
-        //     }
-        //     return false;
-        // case KC_PASTE:
-        //     if (record->event.pressed) {
-        //         register_mods(mod_config(MOD_LCTL));
-        //         register_code(KC_V);
-        //     } else {
-        //         unregister_mods(mod_config(MOD_LCTL));
-        //         unregister_code(KC_V);
-        //     }
-        //     return false;
-        // case KC_CUT:
-        //     if (record->event.pressed) {
-        //         register_mods(mod_config(MOD_LCTL));
-        //         register_code(KC_X);
-        //     } else {
-        //         unregister_mods(mod_config(MOD_LCTL));
-        //         unregister_code(KC_X);
-        //     }
-        //     return false;
-        //     break;
-        case KC_UNDO:
+        case KC_PGDNX:
             if (record->event.pressed) {
                 register_mods(mod_config(MOD_LCTL));
-                register_code(KC_Z);
+                register_code(KC_PGDN);
             } else {
                 unregister_mods(mod_config(MOD_LCTL));
-                unregister_code(KC_Z);
+                unregister_code(KC_PGDN);
+            }
+            return false;
+
+        case KC_PGUPX:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LCTL));
+                register_code(KC_PGUP);
+            } else {
+                unregister_mods(mod_config(MOD_LCTL));
+                unregister_code(KC_PGUP);
+            }
+            return false;
+
+        // copy-paste-cut
+        case KC_COPY:
+            if (keymap_config.swap_win_lin) {
+                if (record->event.pressed) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_code(KC_C);
+                } else {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_code(KC_C);
+                }
+            }
+            return false;
+        case KC_PASTE:
+            if (keymap_config.swap_win_lin) {
+                if (record->event.pressed) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_code(KC_V);
+                } else {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_code(KC_V);
+                }
+            }
+            return false;
+        case KC_CUT:
+            if (keymap_config.swap_win_lin) {
+                if (record->event.pressed) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_code(KC_X);
+                } else {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_code(KC_X);
+                }
+            }
+            return false;
+
+        case KC_UNDO:
+            if (keymap_config.swap_win_lin) {
+                if (record->event.pressed) {
+                    register_mods(mod_config(MOD_LCTL));
+                    register_code(KC_Z);
+                } else {
+                    unregister_mods(mod_config(MOD_LCTL));
+                    unregister_code(KC_Z);
+                }
             }
             return false;
 
@@ -482,7 +624,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_RSFT:
         case KC_LSFT:
             shift_held = record->event.pressed;
-            held_shift = keycode;
+            break;
+
+        case KC_LCTRL:
+        case KC_RCTRL:
+            ctrl_held = record->event.pressed;
+            break;
+
+        case KC_LGUI:
+        case KC_RGUI:
+            gui_held = record->event.pressed;
+            break;
+
+        case KC_LALT:
+        case KC_RALT:
+            alt_held = record->event.pressed;
             break;
 
         case KC_MUTE:
@@ -492,6 +648,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(shift_held ? KC_MPLY : KC_MUTE);
             }
             break;
+
+
+        case KC_WINLIN:
+            if (record->event.pressed) {
+                keymap_config.swap_win_lin = !keymap_config.swap_win_lin;
+                return false;
+            }
 
     }
     return true;

@@ -38,6 +38,7 @@ typedef union {
         bool swap_lctl_lgui : 1;
         bool swap_rctl_rgui : 1;
         bool oneshot_disable : 1;
+        bool swap_win_lin : 1;
     };
 } keymap_config_t;
 
